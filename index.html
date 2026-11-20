@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>こていひ！</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#home">こていひ！</a>
+      <a class="settings-link" href="#settings">設定</a>
+    </div>
+  </header>
+  <nav class="navigation" aria-label="メインメニュー">
+    <a href="#home"><span aria-hidden="true">⌂</span>ホーム</a>
+    <a href="#expenses"><span aria-hidden="true">≡</span>固定費</a>
+    <a href="#methods"><span aria-hidden="true">▤</span>支払い方法</a>
+    <a href="#notices"><span aria-hidden="true">!</span>通知</a>
+  </nav>
+  <main id="screen" class="container"></main>
+  <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+  <template id="expense-form">
+    <label>サービス名<input name="name" required autofocus></label>
+    <label>カテゴリ<select name="category" required></select></label>
+    <label class="custom-category" hidden>新しいカテゴリ名<input name="customCategory"></label>
+    <label>1回の請求額（円）<input name="amount" type="number" min="0" max="9007199254740991" step="1" inputmode="numeric" placeholder="未入力でも登録できます"></label>
+    <label>支払い頻度<select name="interval" required></select></label>
+    <label>支払い方法<select name="methodId"></select></label>
+    <p class="method-hint muted" hidden>実際のサービス側で、この支払い方法が登録されていることを確認してください。</p>
+    <label>メモ<textarea name="memo" rows="3"></textarea></label>
+  </template>
+  <noscript>こていひ！を使うにはJavaScriptを有効にしてください。</noscript>
+</body>
+</html>
