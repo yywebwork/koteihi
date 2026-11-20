@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-KzClr0/0bZIIPSm1GBKKntN5Owmd+4ImdLu+h1i/yoI='; style-src 'sha256-xJUIStAmGD9ZUUS5r+5d66UBbVy91jezOTLzbiLPUKs='; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-P5KuYa2+1W9A4So6p2o/DPqOFjP3xHAS2RuyY3/RfA0='; style-src 'sha256-JQl/zREm85LbcF10/jaUD7fdCFR/Lz1d9QDnolXmyUs='; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>こていひ！</title>
    <style>:root {
   color-scheme: light;
@@ -125,7 +125,7 @@ h3 { font-size: 1rem; }
   font-size: .875rem;
   text-underline-offset: .15em;
 }
-.expense-confirmation {
+.confirmation-panel {
   display: grid;
   gap: .45rem;
   margin-top: .5rem;
@@ -134,14 +134,22 @@ h3 { font-size: 1rem; }
   background: #fff8df;
   color: #634b00;
 }
-.expense-confirmation h3 { display: flex; gap: .45rem; align-items: baseline; }
-.expense-confirmation button { justify-self: start; gap: .4rem; }
-.expense-management {
+.confirmation-panel-title { display: flex; gap: .45rem; align-items: baseline; margin: 0; font-size: 1rem; }
+.confirmation-panel .primary { justify-self: start; gap: .4rem; }
+.confirmation-panel > .actions { gap: .35rem; font-size: .9rem; }
+.method-confirmation-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .5rem;
+}
+.method-confirmation-row .primary { padding-inline: .55rem; font-size: .9rem; }
+.management-actions {
   margin-top: .4rem;
   padding-top: .75rem;
   border-top: 1px solid var(--line);
 }
-.expense-delete { border-color: #c47777; }
+.delete-outline { border-color: #c47777; }
 .expense-table {
   width: 100%;
   table-layout: fixed;
@@ -513,17 +521,17 @@ function expenseDetails(expense) {
   }
   const method = findMethod(expense.methodId)
   const confirmation = expense.confirmed ? null :
-    el('section', { className: 'expense-confirmation', 'aria-labelledby': 'expense-confirmation-title' },
-      el('h3', { id: 'expense-confirmation-title' },
+    el('section', { className: 'confirmation-panel', 'aria-labelledby': 'expense-confirmation-title' },
+      el('h3', { id: 'expense-confirmation-title', className: 'confirmation-panel-title' },
         el('span', { 'aria-hidden': 'true', text: '⚠' }), '支払い情報が未確認です'),
       p('サービス側で新しいカード情報が登録されていることを確認してください。'),
       confirmButton(expense, true))
-  const management = el('div', { className: 'actions expense-management' },
+  const management = el('div', { className: 'actions management-actions' },
     button('編集する', () => expenseForm(expense)),
     button('削除する', () => confirmAction('固定費を削除', `「${expense.name}」を削除しますか？`, () => {
       save({ ...data, expenses: data.expenses.filter(item => item.id !== expense.id) })
       location.hash = '#expenses'
-    }, '削除する'), 'delete expense-delete'))
+    }, '削除する'), 'delete delete-outline'))
 
   screen.append(stack(panel(heading(expense.name), p(expense.category, 'muted'), ...amountDetails(expense),
     p('支払い方法　' + (method?.name ?? '未設定')), badge(method),
@@ -688,11 +696,19 @@ function methodList() {
     for (const method of methods) {
       const linked = linkedExpenses(method)
       const pending = linked.filter(item => !item.confirmed)
+      const confirmation = pending.length
+        ? el('section', { className: 'confirmation-panel', 'aria-label': '支払い情報が未確認です' },
+          el('h4', { className: 'confirmation-panel-title' },
+            el('span', { 'aria-hidden': 'true', text: '⚠' }), '支払い情報が未確認です'),
+          confirmationProgress(method),
+          ...pending.map(item => el('div', { className: 'method-confirmation-row' },
+            p(item.name), confirmButton(item, true))))
+        : method.updated ? confirmationProgress(method) : null
       list.append(panel(heading(method.name, 'h3'), method.expiry ? p('有効期限　' + method.expiry) : null,
         badge(method),
-        method.updated ? confirmationProgress(method) : null,
-        ...pending.map(item => actions(p(item.name), confirmButton(item))),
-        actions(button('編集する', () => methodForm(method)),
+        confirmation,
+        el('div', { className: 'actions management-actions' },
+          button('編集する', () => methodForm(method)),
           method.type === 'card' ? button('カードを更新', () => renewalForm(method)) : null,
           button('削除する', () => {
             if (linked.length) {
@@ -702,7 +718,7 @@ function methodList() {
             confirmAction('支払い方法を削除', `「${method.name}」を削除しますか？`, () => {
               save({ ...data, methods: data.methods.filter(item => item.id !== method.id) })
             }, '削除する')
-          }, 'delete'))))
+          }, 'delete delete-outline'))))
     }
   }
   screen.append(list)

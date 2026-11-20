@@ -118,7 +118,7 @@ h3 { font-size: 1rem; }
   font-size: .875rem;
   text-underline-offset: .15em;
 }
-.expense-confirmation {
+.confirmation-panel {
   display: grid;
   gap: .45rem;
   margin-top: .5rem;
@@ -127,14 +127,22 @@ h3 { font-size: 1rem; }
   background: #fff8df;
   color: #634b00;
 }
-.expense-confirmation h3 { display: flex; gap: .45rem; align-items: baseline; }
-.expense-confirmation button { justify-self: start; gap: .4rem; }
-.expense-management {
+.confirmation-panel-title { display: flex; gap: .45rem; align-items: baseline; margin: 0; font-size: 1rem; }
+.confirmation-panel .primary { justify-self: start; gap: .4rem; }
+.confirmation-panel > .actions { gap: .35rem; font-size: .9rem; }
+.method-confirmation-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .5rem;
+}
+.method-confirmation-row .primary { padding-inline: .55rem; font-size: .9rem; }
+.management-actions {
   margin-top: .4rem;
   padding-top: .75rem;
   border-top: 1px solid var(--line);
 }
-.expense-delete { border-color: #c47777; }
+.delete-outline { border-color: #c47777; }
 .expense-table {
   width: 100%;
   table-layout: fixed;

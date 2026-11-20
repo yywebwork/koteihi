@@ -173,17 +173,17 @@ function expenseDetails(expense) {
   }
   const method = findMethod(expense.methodId)
   const confirmation = expense.confirmed ? null :
-    el('section', { className: 'expense-confirmation', 'aria-labelledby': 'expense-confirmation-title' },
-      el('h3', { id: 'expense-confirmation-title' },
+    el('section', { className: 'confirmation-panel', 'aria-labelledby': 'expense-confirmation-title' },
+      el('h3', { id: 'expense-confirmation-title', className: 'confirmation-panel-title' },
         el('span', { 'aria-hidden': 'true', text: '⚠' }), '支払い情報が未確認です'),
       p('サービス側で新しいカード情報が登録されていることを確認してください。'),
       confirmButton(expense, true))
-  const management = el('div', { className: 'actions expense-management' },
+  const management = el('div', { className: 'actions management-actions' },
     button('編集する', () => expenseForm(expense)),
     button('削除する', () => confirmAction('固定費を削除', `「${expense.name}」を削除しますか？`, () => {
       save({ ...data, expenses: data.expenses.filter(item => item.id !== expense.id) })
       location.hash = '#expenses'
-    }, '削除する'), 'delete expense-delete'))
+    }, '削除する'), 'delete delete-outline'))
 
   screen.append(stack(panel(heading(expense.name), p(expense.category, 'muted'), ...amountDetails(expense),
     p('支払い方法　' + (method?.name ?? '未設定')), badge(method),
@@ -348,11 +348,19 @@ function methodList() {
     for (const method of methods) {
       const linked = linkedExpenses(method)
       const pending = linked.filter(item => !item.confirmed)
+      const confirmation = pending.length
+        ? el('section', { className: 'confirmation-panel', 'aria-label': '支払い情報が未確認です' },
+          el('h4', { className: 'confirmation-panel-title' },
+            el('span', { 'aria-hidden': 'true', text: '⚠' }), '支払い情報が未確認です'),
+          confirmationProgress(method),
+          ...pending.map(item => el('div', { className: 'method-confirmation-row' },
+            p(item.name), confirmButton(item, true))))
+        : method.updated ? confirmationProgress(method) : null
       list.append(panel(heading(method.name, 'h3'), method.expiry ? p('有効期限　' + method.expiry) : null,
         badge(method),
-        method.updated ? confirmationProgress(method) : null,
-        ...pending.map(item => actions(p(item.name), confirmButton(item))),
-        actions(button('編集する', () => methodForm(method)),
+        confirmation,
+        el('div', { className: 'actions management-actions' },
+          button('編集する', () => methodForm(method)),
           method.type === 'card' ? button('カードを更新', () => renewalForm(method)) : null,
           button('削除する', () => {
             if (linked.length) {
@@ -362,7 +370,7 @@ function methodList() {
             confirmAction('支払い方法を削除', `「${method.name}」を削除しますか？`, () => {
               save({ ...data, methods: data.methods.filter(item => item.id !== method.id) })
             }, '削除する')
-          }, 'delete'))))
+          }, 'delete delete-outline'))))
     }
   }
   screen.append(list)
