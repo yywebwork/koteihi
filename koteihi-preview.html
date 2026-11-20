@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-m3PC9Mpy0Z/kt0xnx2HEbikWLO22+tTHJJJxvZ/2PBw='; style-src 'sha256-JxBGqdrUQFQeBmaEuqWrNxyL+I/y6itZ1IcHjCr2qaI='; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-moD/EPVz9crYQ5Do+L5zJxntw9iDwOcB8npv48rT8dc='; style-src 'sha256-csIMyiMMs0+kAdnYUduJdEJ7H1cxX5uW7pqOXB2dduM='; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>こていひ！</title>
    <style>:root {
   color-scheme: light;
@@ -90,6 +90,24 @@ h3 { font-size: 1rem; }
 .metrics strong { font-size: 1.45rem; }
 .muted { color: var(--muted); }
 .actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.help-link {
+  gap: .3rem;
+  padding: 0 .35rem;
+  border: 0;
+  background: transparent;
+  font-size: .85rem;
+  white-space: nowrap;
+}
+.help-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  line-height: 1;
+}
+.help-label { text-decoration: underline; text-underline-offset: .15em; }
 .controls { display: grid; gap: .65rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .controls label:last-child { grid-column: 1 / -1; }
 .expiry-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
@@ -586,10 +604,16 @@ function noticeSection(cards, pending) {
     ...(cards.length || pending.length ? [
       ...cards.map(method => panel(heading(method.name, 'h3'), badge(method),
         p('有効期限　' + method.expiry), link('支払い方法を開く', '#methods'))),
-      ...pendingCards.map(method => panel(heading(method.name + 'の支払い情報を確認', 'h3'), p(progress(method)),
-        button('？ 確認済みとは', showHelp),
-        ...pending.filter(item => item.methodId === method.id).map(item =>
-          actions(p(item.name), confirmButton(item)))))
+      ...pendingCards.map(method => {
+        const help = button('', showHelp, 'help-link')
+        help.setAttribute('aria-haspopup', 'dialog')
+        help.append(el('span', { className: 'help-icon', 'aria-hidden': 'true', text: '?' }),
+          el('span', { className: 'help-label', text: '確認済みとは' }))
+        return panel(heading(method.name + 'の支払い情報を確認', 'h3'),
+          actions(p(progress(method)), help),
+          ...pending.filter(item => item.methodId === method.id).map(item =>
+            actions(p(item.name), confirmButton(item))))
+      })
     ] : [panel(p('現在の通知はありません'))]))
 }
 

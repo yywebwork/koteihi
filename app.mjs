@@ -345,10 +345,16 @@ function noticeSection(cards, pending) {
     ...(cards.length || pending.length ? [
       ...cards.map(method => panel(heading(method.name, 'h3'), badge(method),
         p('有効期限　' + method.expiry), link('支払い方法を開く', '#methods'))),
-      ...pendingCards.map(method => panel(heading(method.name + 'の支払い情報を確認', 'h3'), p(progress(method)),
-        button('？ 確認済みとは', showHelp),
-        ...pending.filter(item => item.methodId === method.id).map(item =>
-          actions(p(item.name), confirmButton(item)))))
+      ...pendingCards.map(method => {
+        const help = button('', showHelp, 'help-link')
+        help.setAttribute('aria-haspopup', 'dialog')
+        help.append(el('span', { className: 'help-icon', 'aria-hidden': 'true', text: '?' }),
+          el('span', { className: 'help-label', text: '確認済みとは' }))
+        return panel(heading(method.name + 'の支払い情報を確認', 'h3'),
+          actions(p(progress(method)), help),
+          ...pending.filter(item => item.methodId === method.id).map(item =>
+            actions(p(item.name), confirmButton(item))))
+      })
     ] : [panel(p('現在の通知はありません'))]))
 }
 
