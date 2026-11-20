@@ -109,6 +109,49 @@ h3 { font-size: 1rem; }
 .normal { background: #e5f2eb; color: #245640; }
 .caution { background: #fff0b8; color: #634b00; }
 .danger { background: #fbe4e1; color: #922c25; }
+.expense-table {
+  width: 100%;
+  table-layout: fixed;
+  border-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.expense-row { cursor: pointer; }
+.expense-name-link { font-weight: 700; text-underline-offset: .15em; }
+.expense-category, .expense-method { color: var(--muted); }
+.expense-warnings { display: grid; gap: .25rem; }
+.expense-warnings .badge { max-width: 100%; }
+.expense-amount { font-variant-numeric: tabular-nums; }
+.expense-amount .muted { font-size: .85em; }
+@media (width < 700px) {
+  .expense-table { display: block; }
+  .expense-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .expense-table tbody { display: grid; gap: .5rem; }
+  .expense-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "category category" "name amount" "method state";
+    align-items: start;
+    gap: .2rem .65rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--line);
+    border-radius: .75rem;
+    background: var(--surface);
+    line-height: 1.4;
+  }
+  .expense-category { grid-area: category; font-size: .8rem; }
+  .expense-name { grid-area: name; }
+  .expense-amount { grid-area: amount; text-align: right; font-size: .9rem; }
+  .expense-method { grid-area: method; font-size: .85rem; }
+  .expense-state { grid-area: state; }
+  .expense-warnings { justify-items: end; }
+  .expense-state .badge { font-size: .75rem; }
+}
 label { display: grid; gap: .25rem; font-weight: 650; min-width: 0; }
 input, select, textarea {
   width: 100%;
@@ -140,4 +183,16 @@ dialog::backdrop { background: #112820a0; }
   .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .controls label:last-child { grid-column: auto; }
+  .expense-table { border: 1px solid var(--line); border-radius: .75rem; background: var(--surface); }
+  .expense-table th, .expense-table td { padding: .65rem .75rem; text-align: left; }
+  .expense-table th { background: #e2f1e9; font-size: .85rem; }
+  .expense-table th:first-child { width: 14%; border-top-left-radius: .7rem; }
+  .expense-table th:nth-child(2) { width: 23%; }
+  .expense-table th:nth-child(3) { width: 23%; }
+  .expense-table th:nth-child(4) { width: 18%; }
+  .expense-table th:last-child { border-top-right-radius: .7rem; }
+  .expense-table td { border-top: 1px solid var(--line); vertical-align: middle; }
+  .expense-row:hover td, .expense-row:focus-within td { background: #f4f7f3; }
+  .expense-row:last-child td:first-child { border-bottom-left-radius: .7rem; }
+  .expense-row:last-child td:last-child { border-bottom-right-radius: .7rem; }
 }

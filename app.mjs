@@ -39,9 +39,10 @@ const button = (text, click, className) => {
 const expenseUrl = expense => '#expense/' + encodeURIComponent(expense.id)
 const findMethod = id => data.methods.find(method => method.id === id)
 const allCategories = () => [...categories, ...data.customCategories]
-const badge = method => {
+const badge = (method, warningsOnly = false) => {
   const status = cardStatus(method)
-  return status ? el('span', { className: 'badge ' + status.tone, text: status.label }) : null
+  if (!status || (warningsOnly && status.tone === 'normal')) return null
+  return el('span', { className: 'badge ' + status.tone, text: status.label })
 }
 
 function page(title, action) {
@@ -186,6 +187,32 @@ function expenseDetails(expense) {
   ))
 }
 
+function expenseTable(expenses) {
+  const columns = ['カテゴリ', '固定費名', '金額・支払い頻度', '支払い方法', '状態']
+  const header = el('tr', { role: 'row' }, ...columns.map(text =>
+    el('th', { text, scope: 'col', role: 'columnheader' })))
+
+  const rows = expenses.map(item => {
+    const method = findMethod(item.methodId)
+    const detail = link(item.name, expenseUrl(item), 'expense-name-link')
+    const cell = (name, ...children) => el('td', { className: 'expense-' + name, role: 'cell' }, ...children)
+    const row = el('tr', { className: 'expense-row', role: 'row' },
+      cell('category', item.category),
+      cell('name', detail),
+      cell('amount', ...amountDetails(item)),
+      cell('method', method?.name ?? '支払い方法未設定'),
+      cell('state', el('div', { className: 'expense-warnings' }, badge(method, true),
+        !item.confirmed ? el('span', { className: 'badge caution', text: '支払い情報が未確認' }) : null)))
+    row.addEventListener('click', event => {
+      if (!event.target.closest('a') && !window.getSelection()?.toString()) detail.click()
+    })
+    return row
+  })
+
+  return el('table', { className: 'expense-table', role: 'table', 'aria-label': '固定費一覧' },
+    el('thead', { role: 'rowgroup' }, header), el('tbody', { role: 'rowgroup' }, ...rows))
+}
+
 function expenseList() {
   page('固定費', button('＋ 固定費を登録', () => expenseForm(), 'primary'))
   const list = stack()
@@ -201,13 +228,8 @@ function expenseList() {
     const results = data.expenses.filter(item =>
       (!filters.category || item.category === filters.category) &&
       (!filters.method || (item.methodId === null ? 'unset' : 'id:' + item.methodId) === filters.method)).sort(sorters[filters.sort])
-    list.replaceChildren(...(results.length ? results.map(item => {
-      const method = findMethod(item.methodId)
-      return el('a', { className: 'tile', href: expenseUrl(item) },
-        p(item.category, 'muted label'), heading(item.name), ...amountDetails(item),
-        p(method?.name ?? '支払い方法未設定', 'muted'), badge(method),
-        !item.confirmed ? p('支払い情報が未確認', 'badge caution') : null)
-    }) : [panel(p(data.expenses.length ? '条件に一致する固定費がありません。' : '固定費はまだ登録されていません。'))]))
+    list.replaceChildren(results.length ? expenseTable(results) :
+      panel(p(data.expenses.length ? '条件に一致する固定費がありません。' : '固定費はまだ登録されていません。')))
   }
   for (const [key, label, entries] of [
     ['sort', '並べ替え', [['category', 'カテゴリ順'], ['name', '名前順'], ['amount', '請求額の高い順']]],
