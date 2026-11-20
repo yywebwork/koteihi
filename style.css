@@ -109,6 +109,32 @@ h3 { font-size: 1rem; }
 .normal { background: #e5f2eb; color: #245640; }
 .caution { background: #fff0b8; color: #634b00; }
 .danger { background: #fbe4e1; color: #922c25; }
+.expense-back {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: .875rem;
+  text-underline-offset: .15em;
+}
+.expense-confirmation {
+  display: grid;
+  gap: .45rem;
+  margin-top: .5rem;
+  padding: .85rem;
+  border-radius: .65rem;
+  background: #fff8df;
+  color: #634b00;
+}
+.expense-confirmation h3 { display: flex; gap: .45rem; align-items: baseline; }
+.expense-confirmation button { justify-self: start; gap: .4rem; }
+.expense-management {
+  margin-top: .4rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--line);
+}
+.expense-delete { border-color: #c47777; }
 .expense-table {
   width: 100%;
   table-layout: fixed;

@@ -163,28 +163,32 @@ function amountDetails(expense) {
 }
 
 function expenseDetails(expense) {
+  screen.append(el('a', { className: 'expense-back', href: '#expenses' },
+    el('span', { 'aria-hidden': 'true', text: '←' }), '固定費一覧へ'))
+  page('固定費の詳細')
+
   if (!expense) {
-    page('固定費の詳細')
-    screen.append(stack(panel(p('固定費が見つかりません。'), link('固定費一覧へ', '#expenses'))))
+    screen.append(stack(panel(p('固定費が見つかりません。'))))
     return
   }
   const method = findMethod(expense.methodId)
-  page('固定費の詳細')
-  screen.append(stack(
-    link('固定費一覧へ', '#expenses'),
-    panel(heading(expense.name), p(expense.category, 'muted'), ...amountDetails(expense),
-      p('支払い方法　' + (method?.name ?? '未設定')), badge(method),
-      expense.memo ? el('p', { text: expense.memo, className: 'memo' }) : null,
-      !expense.confirmed ? p('カード更新後の支払い情報が未確認です。') : null,
-      actions(
-        button('編集する', () => expenseForm(expense)),
-        !expense.confirmed ? confirmButton(expense) : null,
-        button('削除する', () => confirmAction('固定費を削除', `「${expense.name}」を削除しますか？`, () => {
-          save({ ...data, expenses: data.expenses.filter(item => item.id !== expense.id) })
-          location.hash = '#expenses'
-        }, '削除する'), 'delete')
-      ))
-  ))
+  const confirmation = expense.confirmed ? null :
+    el('section', { className: 'expense-confirmation', 'aria-labelledby': 'expense-confirmation-title' },
+      el('h3', { id: 'expense-confirmation-title' },
+        el('span', { 'aria-hidden': 'true', text: '⚠' }), '支払い情報が未確認です'),
+      p('サービス側で新しいカード情報が登録されていることを確認してください。'),
+      confirmButton(expense, true))
+  const management = el('div', { className: 'actions expense-management' },
+    button('編集する', () => expenseForm(expense)),
+    button('削除する', () => confirmAction('固定費を削除', `「${expense.name}」を削除しますか？`, () => {
+      save({ ...data, expenses: data.expenses.filter(item => item.id !== expense.id) })
+      location.hash = '#expenses'
+    }, '削除する'), 'delete expense-delete'))
+
+  screen.append(stack(panel(heading(expense.name), p(expense.category, 'muted'), ...amountDetails(expense),
+    p('支払い方法　' + (method?.name ?? '未設定')), badge(method),
+    expense.memo ? el('p', { text: expense.memo, className: 'memo' }) : null,
+    confirmation, management)))
 }
 
 function expenseTable(expenses) {
@@ -307,12 +311,14 @@ function renewalForm(method) {
   }, 'カードを更新する')
 }
 
-function confirmButton(expense) {
-  return button('確認済みにする', () =>
+function confirmButton(expense, primary = false) {
+  const control = button('確認済みにする', () =>
     confirmAction('支払い情報の確認', `「${expense.name}」のサービス側で現在のカード情報が登録されていることを確認しましたか？`, () => {
       save({ ...data, expenses: data.expenses.map(item =>
         item.id === expense.id ? { ...item, confirmed: true } : item) })
-    }, '確認済みにする'))
+    }, '確認済みにする'), primary ? 'primary' : undefined)
+  if (primary) control.prepend(el('span', { 'aria-hidden': 'true', text: '✓' }))
+  return control
 }
 
 function linkedExpenses(method) {
