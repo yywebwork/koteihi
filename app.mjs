@@ -153,10 +153,16 @@ function expenseForm(expense) {
   })
 }
 
-function amountDetails(expense) {
-  const amount = expense.amount === null ? '金額未入力' : yen(expense.amount)
+function amountDetails(expense, emphasize = false) {
+  const missing = expense.amount === null
+  const amount = missing ? '金額未入力' : yen(expense.amount)
+  const frequency = frequencies[expense.interval]
+  const charge = emphasize
+    ? el('p', {}, el(missing ? 'span' : 'strong', { text: amount, className: missing ? 'muted' : undefined }),
+      el('span', { className: 'muted', text: ' ／ ' + frequency }))
+    : p(`${amount} ／ ${frequency}`)
   return [
-    p(`${amount} ／ ${frequencies[expense.interval]}`),
+    charge,
     expense.interval !== 1 && expense.amount !== null
       ? p(`月額換算 約${yen(monthlyTotal([expense]))}`, 'muted') : null
   ]
@@ -203,7 +209,7 @@ function expenseTable(expenses) {
     const row = el('tr', { className: 'expense-row', role: 'row' },
       cell('category', item.category),
       cell('name', detail),
-      cell('amount', ...amountDetails(item)),
+      cell('amount', ...amountDetails(item, true)),
       cell('method', method?.name ?? '支払い方法未設定'),
       cell('state', el('div', { className: 'expense-warnings' }, badge(method, true),
         !item.confirmed ? el('span', { className: 'badge caution', text: '支払い情報が未確認' }) : null)))
@@ -215,6 +221,17 @@ function expenseTable(expenses) {
 
   return el('table', { className: 'expense-table', role: 'table', 'aria-label': '固定費一覧' },
     el('thead', { role: 'rowgroup' }, header), el('tbody', { role: 'rowgroup' }, ...rows))
+}
+
+function expenseTotals() {
+  const monthly = monthlyTotal(data.expenses)
+  const missing = data.expenses.filter(item => item.amount === null).length
+  const total = (label, amount) => el('div', { className: 'panel' },
+    heading(label), el('strong', { text: yen(amount) }))
+  return el('div', { className: 'expense-totals section' },
+    total('月額換算の固定費合計', monthly),
+    total('年間換算の固定費合計', monthly * 12n),
+    missing ? p(`金額未入力の固定費 ${number.format(missing)}件は合計に含まれていません。`, 'muted') : null)
 }
 
 function expenseList() {
@@ -249,7 +266,7 @@ function expenseList() {
     })
     filterBar.append(field(label, select))
   }
-  screen.append(filterBar, list)
+  screen.append(expenseTotals(), filterBar, list)
   updateList()
 }
 

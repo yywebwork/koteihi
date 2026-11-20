@@ -143,6 +143,19 @@ h3 { font-size: 1rem; }
   border-top: 1px solid var(--line);
 }
 .delete-outline { border-color: #c47777; }
+.expense-totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .65rem;
+}
+.expense-totals .panel { padding: .65rem .75rem; gap: .2rem; align-content: start; }
+.expense-totals h2 { font-size: .85rem; color: var(--muted); }
+.expense-totals strong {
+  color: var(--accent);
+  font-size: clamp(1.15rem, 4vw, 1.65rem);
+  font-variant-numeric: tabular-nums;
+}
+.expense-totals > p { grid-column: 1 / -1; font-size: .85rem; }
 .expense-table {
   width: 100%;
   table-layout: fixed;
