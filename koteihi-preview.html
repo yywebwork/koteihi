@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-42C1/zUjauRtEGuulOy3huobDxZlo5WvktFcH1Tawd0='; style-src 'sha256-JYr3CphDR82HB/oxcnw7fjJ3fXohv5KLKqtGkkp93tc='; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>こていひ！</title>
+   <style>:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+  color: #182d27;
+  background: #f4f7f3;
+  --accent: #17664e;
+  --line: #dbe5de;
+  --muted: #52645c;
+  --surface: #fff;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; line-height: 1.6; }
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; }
+a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #7f54a8; outline-offset: 3px; }
+button, .button, .settings-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .55rem .9rem;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: .65rem;
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.delete { color: #9a2b2b; }
+.site-header, .navigation { background: var(--surface); }
+.site-header { border-bottom: 1px solid var(--line); }
+.header-inner, .container { width: min(100% - 2rem, 60rem); margin-inline: auto; }
+.header-inner, .row { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
+.header-inner { min-height: 64px; padding-block: .65rem; }
+.brand-block { display: grid; min-width: 0; line-height: 1.35; }
+.subtitle { color: var(--muted); font-size: .85rem; }
+.settings-link { flex-shrink: 0; }
+.brand { font-size: 1.45rem; font-weight: 850; text-decoration: none; }
+.navigation {
+  position: fixed;
+  z-index: 1;
+  inset: auto 0 0;
+  display: flex;
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.navigation a {
+  flex: 1;
+  padding: .35rem .15rem;
+  text-align: center;
+  font-size: .8rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+.navigation span { display: block; font-size: 1.2rem; line-height: 1.3; }
+[aria-current="page"] { background: #e2f1e9; }
+.container { padding: 1.25rem 0 calc(5rem + env(safe-area-inset-bottom)); }
+h1, h2, h3, p { margin: 0; overflow-wrap: anywhere; }
+h1 { font-size: clamp(1.55rem, 5vw, 2.3rem); line-height: 1.25; }
+h2 { font-size: 1.15rem; }
+h3 { font-size: 1rem; }
+.stack { display: grid; gap: .85rem; }
+.section { margin-top: 1.25rem; }
+.panel, .tile {
+  display: grid;
+  gap: .45rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+  padding: 1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tile { color: inherit; text-decoration: none; }
+.tile:hover { border-color: var(--accent); }
+.hero { background: #123f32; color: #fff; padding: 1.25rem; }
+.total { font-size: clamp(1.85rem, 7vw, 3.3rem); font-weight: 800; line-height: 1.2; }
+.metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.metrics strong { font-size: 1.45rem; }
+.muted { color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.help-link {
+  gap: .3rem;
+  padding: 0 .35rem;
+  border: 0;
+  background: transparent;
+  font-size: .85rem;
+  white-space: nowrap;
+}
+.help-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  line-height: 1;
+}
+.help-label { text-decoration: underline; text-underline-offset: .15em; }
+.controls { display: grid; gap: .65rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.controls label:last-child { grid-column: 1 / -1; }
+.expiry-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.label, .badge { font-size: .85rem; }
+.badge { width: fit-content; border-radius: .4rem; padding: .12rem .45rem; font-weight: 650; }
+.normal { background: #e5f2eb; color: #245640; }
+.caution { background: #fff0b8; color: #634b00; }
+.danger { background: #fbe4e1; color: #922c25; }
+.expense-back {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: .875rem;
+  text-underline-offset: .15em;
+}
+.confirmation-panel {
+  display: grid;
+  gap: .45rem;
+  margin-top: .5rem;
+  padding: .85rem;
+  border-radius: .65rem;
+  background: #fff8df;
+  color: #634b00;
+}
+.confirmation-panel-title { display: flex; gap: .45rem; align-items: baseline; margin: 0; font-size: 1rem; }
+.confirmation-panel .primary { justify-self: start; gap: .4rem; }
+.confirmation-panel > .actions { gap: .35rem; font-size: .9rem; }
+.method-confirmation-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .5rem;
+}
+.method-confirmation-row .primary { padding-inline: .55rem; font-size: .9rem; }
+.management-actions {
+  margin-top: .4rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--line);
+}
+.delete-outline { border-color: #c47777; }
+.expense-totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .65rem;
+}
+.expense-totals .panel { padding: .65rem .75rem; gap: .2rem; align-content: start; }
+.expense-totals h2 { font-size: .85rem; color: var(--muted); }
+.expense-totals strong {
+  color: var(--accent);
+  font-size: clamp(1.15rem, 4vw, 1.65rem);
+  font-variant-numeric: tabular-nums;
+}
+.expense-totals > p { grid-column: 1 / -1; font-size: .85rem; }
+.expense-table {
+  width: 100%;
+  table-layout: fixed;
+  border-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.expense-row { cursor: pointer; }
+.expense-name-link { font-weight: 700; text-underline-offset: .15em; }
+.expense-category, .expense-method { color: var(--muted); }
+.expense-warnings { display: grid; gap: .25rem; }
+.expense-warnings .badge { max-width: 100%; }
+.expense-amount { font-variant-numeric: tabular-nums; }
+.expense-amount .muted { font-size: .85em; }
+@media (width < 700px) {
+  .expense-table { display: block; }
+  .expense-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .expense-table tbody { display: grid; gap: .5rem; }
+  .expense-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "category category" "name amount" "method state";
+    align-items: start;
+    gap: .2rem .65rem;
+    padding: .6rem .75rem;
+    border: 1px solid var(--line);
+    border-radius: .75rem;
+    background: var(--surface);
+    line-height: 1.4;
+  }
+  .expense-category { grid-area: category; font-size: .8rem; }
+  .expense-name { grid-area: name; }
+  .expense-amount { grid-area: amount; text-align: right; font-size: .9rem; }
+  .expense-method { grid-area: method; font-size: .85rem; }
+  .expense-state { grid-area: state; }
+  .expense-warnings { justify-items: end; }
+  .expense-state .badge { font-size: .75rem; }
+}
+label { display: grid; gap: .25rem; font-weight: 650; min-width: 0; }
+input, select, textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: .45rem .55rem;
+  border: 1px solid #a9bcb0;
+  border-radius: .45rem;
+  color: inherit;
+  background: white;
+}
+textarea { resize: vertical; }
+dialog {
+  width: min(100% - 1.5rem, 33rem);
+  max-height: calc(100dvh - 1.5rem);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1rem;
+  color: inherit;
+}
+dialog::backdrop { background: #112820a0; }
+.error { color: #9a2b2b; }
+.memo { white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (min-width: 700px) {
+  .navigation { position: static; justify-content: center; border-top: 0; border-bottom: 1px solid var(--line); padding: 0; }
+  .navigation a { flex: 0 1 10rem; padding: .75rem; font-size: .95rem; }
+  .navigation span { display: inline; margin-right: .4rem; }
+  .container { padding: 2rem 0 4rem; }
+  .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .controls label:last-child { grid-column: auto; }
+  .expense-table { border: 1px solid var(--line); border-radius: .75rem; background: var(--surface); }
+  .expense-table th, .expense-table td { padding: .65rem .75rem; text-align: left; }
+  .expense-table th { background: #e2f1e9; font-size: .85rem; }
+  .expense-table th:first-child { width: 14%; border-top-left-radius: .7rem; }
+  .expense-table th:nth-child(2) { width: 23%; }
+  .expense-table th:nth-child(3) { width: 23%; }
+  .expense-table th:nth-child(4) { width: 18%; }
+  .expense-table th:last-child { border-top-right-radius: .7rem; }
+  .expense-table td { border-top: 1px solid var(--line); vertical-align: middle; }
+  .expense-row:hover td, .expense-row:focus-within td { background: #f4f7f3; }
+  .expense-row:last-child td:first-child { border-bottom-left-radius: .7rem; }
+  .expense-row:last-child td:last-child { border-bottom-right-radius: .7rem; }
+}
+</style>
+  <script defer type="module">"use strict"
+const categories = ['住居費', '光熱費', '通信費', '保険', 'サブスク', '教育費', 'その他']
+const frequencies = { 1: '毎月', 2: '2か月ごと', 6: '6か月ごと', 12: '毎年' }
+
+const key = 'koteihi'
+const empty = () => ({ version: 1, expenses: [], methods: [], customCategories: [] })
+const object = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+const name = value => typeof value === 'string' && value.trim() !== ''
+const expiryValid = value => typeof value === 'string' && /^[0-9]{4}-(0[1-9]|1[0-2])$/.test(value) && !value.startsWith('0000-')
+
+function unique(records, valid) {
+  const ids = new Set()
+  return records.every(record => {
+    if (!object(record) || !name(record.id) || !record.id.isWellFormed() || ids.has(record.id) || !valid(record)) return false
+    ids.add(record.id)
+    return true
+  })
+}
+
+function validate(data) {
+  if (!object(data) || data.version !== 1 ||
+      !['expenses', 'methods', 'customCategories'].every(field => Array.isArray(data[field]))) {
+    throw new Error('バックアップの形式またはバージョンが正しくありません。')
+  }
+
+  const allCategories = new Set(categories)
+  for (const category of data.customCategories) {
+    if (!name(category) || category.trim() !== category || allCategories.has(category)) {
+      throw new Error('カスタムカテゴリの内容が正しくありません。')
+    }
+    allCategories.add(category)
+  }
+
+  if (!unique(data.methods, method => name(method.name) &&
+    (method.type === 'bank' || (method.type === 'card' &&
+      expiryValid(method.expiry) && typeof method.updated === 'boolean')))) {
+    throw new Error('支払い方法の内容が正しくありません。')
+  }
+
+  const methods = new Map(data.methods.map(method => [method.id, method]))
+  if (!unique(data.expenses, expense => {
+    const method = methods.get(expense.methodId)
+    return name(expense.name) && allCategories.has(expense.category) &&
+      (expense.amount === null || (Number.isSafeInteger(expense.amount) && expense.amount >= 0)) &&
+      [1, 2, 6, 12].includes(expense.interval) &&
+      (expense.methodId === null || method !== undefined) &&
+      typeof expense.memo === 'string' && typeof expense.confirmed === 'boolean' &&
+      (expense.confirmed || (method?.type === 'card' && method.updated))
+  })) {
+    throw new Error('固定費の内容または支払い方法との紐付けが正しくありません。')
+  }
+
+  // 保存対象を明示し、バックアップに含まれる未知の項目を引き継がない。
+  return {
+    version: 1,
+    customCategories: [...data.customCategories],
+    methods: data.methods.map(({ id, name, type, expiry, updated }) =>
+      type === 'card' ? { id, name, type, expiry, updated } : { id, name, type }),
+    expenses: data.expenses.map(({ id, name, category, amount, interval, methodId, memo, confirmed }) =>
+      ({ id, name, category, amount, interval, methodId, memo, confirmed }))
+  }
+}
+
+const storage = {
+  load() {
+    const raw = localStorage.getItem(key)
+    return raw === null ? empty() : validate(JSON.parse(raw))
+  },
+  save(data) {
+    localStorage.setItem(key, JSON.stringify(validate(data)))
+  },
+  clear() {
+    localStorage.removeItem(key)
+    return empty()
+  }
+}
+
+function newId() {
+  return globalThis.crypto.randomUUID?.() ??
+    Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)), byte =>
+      byte.toString(16).padStart(2, '0')).join('')
+}
+
+function cardStatus(method, date = new Date()) {
+  if (method?.type !== 'card') return null
+  const [year, month] = method.expiry.split('-').map(Number)
+  const monthsLeft = (year - date.getFullYear()) * 12 + month - date.getMonth() - 1
+  if (monthsLeft > 1) return { label: '有効期限内', tone: 'normal' }
+  if (monthsLeft === 1) return { label: '注意・来月が有効期限', tone: 'caution' }
+  return { label: monthsLeft === 0 ? '警告・今月が有効期限' : '警告・有効期限切れ', tone: 'danger' }
+}
+
+function monthlyTotal(expenses) {
+  // すべての支払い頻度で割り切れる12を使い、丸めは合計に対して一度だけ行う。
+  const scaled = expenses.reduce((sum, expense) =>
+    sum + BigInt(expense.amount ?? 0) * (12n / BigInt(expense.interval)), 0n)
+  return (scaled + 6n) / 12n
+}
+
+function renewCard(data, id, expiry) {
+  return {
+    ...data,
+    methods: data.methods.map(method =>
+      method.id === id ? { ...method, expiry, updated: true } : method),
+    expenses: data.expenses.map(expense =>
+      expense.methodId === id ? { ...expense, confirmed: false } : expense)
+  }
+}
+
+
+const screen = document.querySelector('#screen')
+const dialog = document.querySelector('#dialog')
+const number = new Intl.NumberFormat('ja-JP')
+const yen = value => `${number.format(value)}円`
+const storageNote = 'データはこのブラウザに保存されます。ブラウザのデータを消去すると失われるため、設定からバックアップを保存できます。'
+const confirmationHelp = '「確認済み」は、サービス側で現在のカード情報が登録されていることを確認した状態です。自動で更新された場合も、サービス側で確認してください。新規登録や支払い先の変更時は確認済みとして登録されます。'
+const filters = { category: '', method: '', sort: 'category' }
+let data
+let loadError = false
+
+try {
+  data = storage.load()
+} catch {
+  loadError = true
+}
+
+function el(tag, { text, className, ...attrs } = {}, ...children) {
+  const node = document.createElement(tag)
+  if (text !== undefined) node.textContent = text
+  if (className) node.className = className
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value)
+  node.append(...children.filter(child => child != null))
+  return node
+}
+
+const p = (text, className) => el('p', { text, className })
+const heading = (text, tag = 'h2') => el(tag, { text })
+const panel = (...children) => el('div', { className: 'panel' }, ...children)
+const stack = (...children) => el('div', { className: 'stack section' }, ...children)
+const actions = (...children) => el('div', { className: 'actions' }, ...children)
+const link = (text, href, className = 'button') => el('a', { text, href, className })
+const button = (text, click, className) => {
+  const node = el('button', { text, type: 'button', className })
+  node.addEventListener('click', click)
+  return node
+}
+const expenseUrl = expense => '#expense/' + encodeURIComponent(expense.id)
+const findMethod = id => data.methods.find(method => method.id === id)
+const allCategories = () => [...categories, ...data.customCategories]
+const badge = (method, warningsOnly = false) => {
+  const status = cardStatus(method)
+  if (!status || (warningsOnly && status.tone === 'normal')) return null
+  return el('span', { className: 'badge ' + status.tone, text: status.label })
+}
+
+function page(title, action) {
+  screen.append(el('div', { className: 'row' }, heading(title, 'h1'), action))
+}
+
+function openDialog(title, content, submit, submitLabel = '保存する') {
+  const form = el('form', { className: 'stack', method: 'dialog' })
+  const error = el('p', { role: 'alert', className: 'error', hidden: '' })
+  const close = button(submit ? 'キャンセル' : '閉じる', () => dialog.close())
+  form.append(el('h2', { id: 'dialog-title', text: title }), content, error,
+    actions(close, submit ? el('button', { type: 'submit', text: submitLabel, className: 'primary' }) : null))
+  form.addEventListener('submit', event => {
+    event.preventDefault()
+    try {
+      submit(new FormData(form))
+      dialog.close()
+      render()
+    } catch (failure) {
+      error.textContent = failure.message
+      error.hidden = false
+    }
+  })
+  dialog.replaceChildren(form)
+  dialog.showModal()
+}
+
+function save(next) {
+  try {
+    storage.save(next)
+  } catch {
+    throw new Error('データを保存できませんでした。ブラウザの保存設定や空き容量を確認してください。')
+  }
+  data = next
+  loadError = false
+}
+
+function confirmAction(title, text, run, label) {
+  openDialog(title, p(text), run, label)
+}
+
+function showHelp() {
+  openDialog('確認済みとは？', p(confirmationHelp))
+}
+
+function options(select, entries, selected) {
+  for (const [value, text] of entries) select.append(new Option(text, value))
+  select.value = selected
+}
+
+function field(text, control) {
+  return el('label', {}, text, control)
+}
+
+function getName(values, key = 'name') {
+  const value = values.get(key).trim()
+  if (!value) throw new Error('名前を入力してください。')
+  return value
+}
+
+function expenseForm(expense) {
+  const fields = document.querySelector('#expense-form').content.cloneNode(true)
+  const control = name => fields.querySelector(`[name="${name}"]`)
+  const category = control('category')
+  const custom = control('customCategory')
+  const method = control('methodId')
+  const hint = fields.querySelector('.method-hint')
+  const addingCategory = 'add-category'
+  const categoryOptions = allCategories().map((name, index) => [String(index), name])
+  options(category, [['', '選択してください'], ...categoryOptions, [addingCategory, '＋ 新しいカテゴリを追加']],
+    expense ? String(allCategories().indexOf(expense.category)) : '')
+  options(control('interval'), Object.entries(frequencies), expense?.interval ?? 1)
+  options(method, [['', '未設定'], ...data.methods.map(item => [item.id, item.name])], expense?.methodId ?? '')
+  control('name').value = expense?.name ?? ''
+  control('amount').value = expense?.amount ?? ''
+  control('memo').value = expense?.memo ?? ''
+
+  category.addEventListener('change', () => {
+    custom.closest('label').hidden = category.value !== addingCategory
+    custom.required = category.value === addingCategory
+  })
+  method.addEventListener('change', () => {
+    hint.hidden = !(findMethod(method.value)?.updated && method.value !== expense?.methodId)
+  })
+
+  openDialog(expense ? '固定費を編集' : '固定費を登録', fields, values => {
+    const categoryValue = values.get('category')
+    const isCustom = categoryValue === addingCategory
+    const categoryName = isCustom ? getName(values, 'customCategory') : allCategories()[Number(categoryValue)]
+    if (isCustom && allCategories().includes(categoryName)) throw new Error('同じ名前のカテゴリがすでにあります。')
+    const methodId = values.get('methodId') || null
+    const amount = values.get('amount')
+    const item = {
+      id: expense?.id ?? newId(),
+      name: getName(values),
+      category: categoryName,
+      amount: amount === '' ? null : Number(amount),
+      interval: Number(values.get('interval')),
+      methodId,
+      memo: values.get('memo'),
+      confirmed: expense?.methodId === methodId ? expense.confirmed : true
+    }
+    save({
+      ...data,
+      customCategories: isCustom ? [...data.customCategories, categoryName] : data.customCategories,
+      expenses: expense ? data.expenses.map(record => record.id === item.id ? item : record) : [...data.expenses, item]
+    })
+  })
+}
+
+function amountDetails(expense, emphasize = false) {
+  const missing = expense.amount === null
+  const amount = missing ? '金額未入力' : yen(expense.amount)
+  const frequency = frequencies[expense.interval]
+  const charge = emphasize
+    ? el('p', {}, el(missing ? 'span' : 'strong', { text: amount, className: missing ? 'muted' : undefined }),
+      el('span', { className: 'muted', text: ' ／ ' + frequency }))
+    : p(`${amount} ／ ${frequency}`)
+  return [
+    charge,
+    expense.interval !== 1 && expense.amount !== null
+      ? p(`月額換算 約${yen(monthlyTotal([expense]))}`, 'muted') : null
+  ]
+}
+
+function expenseDetails(expense) {
+  screen.append(el('a', { className: 'expense-back', href: '#expenses' },
+    el('span', { 'aria-hidden': 'true', text: '←' }), '固定費一覧へ'))
+  page('固定費の詳細')
+
+  if (!expense) {
+    screen.append(stack(panel(p('固定費が見つかりません。'))))
+    return
+  }
+  const method = findMethod(expense.methodId)
+  const confirmation = expense.confirmed ? null :
+    el('section', { className: 'confirmation-panel', 'aria-labelledby': 'expense-confirmation-title' },
+      el('h3', { id: 'expense-confirmation-title', className: 'confirmation-panel-title' },
+        el('span', { 'aria-hidden': 'true', text: '⚠' }), '支払い情報が未確認です'),
+      p('サービス側で新しいカード情報が登録されていることを確認してください。'),
+      confirmButton(expense, true))
+  const management = el('div', { className: 'actions management-actions' },
+    button('編集する', () => expenseForm(expense)),
+    button('削除する', () => confirmAction('固定費を削除', `「${expense.name}」を削除しますか？`, () => {
+      save({ ...data, expenses: data.expenses.filter(item => item.id !== expense.id) })
+      location.hash = '#expenses'
+    }, '削除する'), 'delete delete-outline'))
+
+  screen.append(stack(panel(heading(expense.name), p(expense.category, 'muted'), ...amountDetails(expense),
+    p('支払い方法　' + (method?.name ?? '未設定')), badge(method),
+    expense.memo ? el('p', { text: expense.memo, className: 'memo' }) : null,
+    confirmation, management)))
+}
+
+function expenseTable(expenses) {
+  const columns = ['カテゴリ', '固定費名', '金額・支払い頻度', '支払い方法', '状態']
+  const header = el('tr', { role: 'row' }, ...columns.map(text =>
+    el('th', { text, scope: 'col', role: 'columnheader' })))
+
+  const rows = expenses.map(item => {
+    const method = findMethod(item.methodId)
+    const detail = link(item.name, expenseUrl(item), 'expense-name-link')
+    const cell = (name, ...children) => el('td', { className: 'expense-' + name, role: 'cell' }, ...children)
+    const row = el('tr', { className: 'expense-row', role: 'row' },
+      cell('category', item.category),
+      cell('name', detail),
+      cell('amount', ...amountDetails(item, true)),
+      cell('method', method?.name ?? '支払い方法未設定'),
+      cell('state', el('div', { className: 'expense-warnings' }, badge(method, true),
+        !item.confirmed ? el('span', { className: 'badge caution', text: '支払い情報が未確認' }) : null)))
+    row.addEventListener('click', event => {
+      if (!event.target.closest('a') && !window.getSelection()?.toString()) detail.click()
+    })
+    return row
+  })
+
+  return el('table', { className: 'expense-table', role: 'table', 'aria-label': '固定費一覧' },
+    el('thead', { role: 'rowgroup' }, header), el('tbody', { role: 'rowgroup' }, ...rows))
+}
+
+function expenseTotals() {
+  const monthly = monthlyTotal(data.expenses)
+  const missing = data.expenses.filter(item => item.amount === null).length
+  const total = (label, amount) => el('div', { className: 'panel' },
+    heading(label), el('strong', { text: yen(amount) }))
+  return el('div', { className: 'expense-totals section' },
+    total('月額換算の固定費合計', monthly),
+    total('年間換算の固定費合計', monthly * 12n),
+    missing ? p(`金額未入力の固定費 ${number.format(missing)}件は合計に含まれていません。`, 'muted') : null)
+}
+
+function expenseList() {
+  page('固定費', button('＋ 固定費を登録', () => expenseForm(), 'primary'))
+  const list = stack()
+  const filterBar = el('div', { className: 'controls panel section' })
+  function updateList() {
+    const order = allCategories()
+    const byName = (a, b) => a.name.localeCompare(b.name, 'ja')
+    const sorters = {
+      category: (a, b) => order.indexOf(a.category) - order.indexOf(b.category) || byName(a, b),
+      name: byName,
+      amount: (a, b) => (b.amount ?? -1) - (a.amount ?? -1) || byName(a, b)
+    }
+    const results = data.expenses.filter(item =>
+      (!filters.category || item.category === filters.category) &&
+      (!filters.method || (item.methodId === null ? 'unset' : 'id:' + item.methodId) === filters.method)).sort(sorters[filters.sort])
+    list.replaceChildren(results.length ? expenseTable(results) :
+      panel(p(data.expenses.length ? '条件に一致する固定費がありません。' : '固定費はまだ登録されていません。')))
+  }
+  for (const [key, label, entries] of [
+    ['sort', '並べ替え', [['category', 'カテゴリ順'], ['name', '名前順'], ['amount', '請求額の高い順']]],
+    ['category', 'カテゴリ', [['', 'すべて'], ...allCategories().map(name => [name, name])]],
+    ['method', '支払い方法', [['', 'すべて'], ['unset', '未設定'], ...data.methods.map(item => ['id:' + item.id, item.name])]]
+  ]) {
+    const select = el('select')
+    options(select, entries, filters[key])
+    filters[key] = select.value
+    select.addEventListener('change', () => {
+      filters[key] = select.value
+      updateList()
+    })
+    filterBar.append(field(label, select))
+  }
+  screen.append(expenseTotals(), filterBar, list)
+  updateList()
+}
+
+function expiryFields(value = '') {
+  const [year = '', month = ''] = value.split('-')
+  const yearInput = el('input', { name: 'expiryYear', inputmode: 'numeric', maxlength: '4',
+    pattern: '[0-9]{4}', placeholder: '例 2028', required: '' })
+  yearInput.value = year
+  yearInput.addEventListener('input', () => {
+    const digits = yearInput.value.replace(/[^0-9]/g, '').slice(0, 4)
+    if (digits !== yearInput.value) yearInput.value = digits
+  })
+  const monthInput = el('select', { name: 'expiryMonth', required: '' })
+  options(monthInput, [['', '選択してください'], ...Array.from({ length: 12 }, (_, index) => [
+    String(index + 1).padStart(2, '0'), String(index + 1)
+  ])], month)
+  return el('div', { className: 'expiry-fields' },
+    field('有効期限の年（西暦4桁）', yearInput), field('有効期限の月', monthInput))
+}
+
+function readExpiry(values) {
+  const expiry = `${values.get('expiryYear')}-${values.get('expiryMonth')}`
+  if (!expiryValid(expiry)) throw new Error('有効期限は西暦4桁と1〜12の月を入力してください。')
+  return expiry
+}
+
+function methodForm(method) {
+  const type = el('select', { name: 'type' })
+  options(type, [['card', 'クレジットカード'], ['bank', '銀行口座']], method?.type ?? 'card')
+  const name = el('input', { name: 'name', required: '', autofocus: '' })
+  name.value = method?.name ?? ''
+  const expiry = expiryFields(method?.expiry)
+  function updateFields() {
+    expiry.hidden = type.value !== 'card'
+    for (const input of expiry.querySelectorAll('input, select')) input.disabled = expiry.hidden
+  }
+  type.addEventListener('change', updateFields)
+  updateFields()
+  openDialog(method ? '支払い方法を編集' : '支払い方法を追加',
+    el('div', { className: 'stack' }, method ? null : field('種類', type), field('表示名称', name),
+      expiry, p('カード番号、セキュリティコード、口座番号などは入力しないでください。', 'muted')),
+    values => {
+      const item = { id: method?.id ?? newId(), type: type.value, name: getName(values) }
+      if (item.type === 'card') {
+        item.expiry = readExpiry(values)
+        item.updated = method?.updated ?? false
+      }
+      save({ ...data, methods: method ? data.methods.map(record => record.id === item.id ? item : record) : [...data.methods, item] })
+    })
+}
+
+function renewalForm(method) {
+  openDialog('カードを更新', el('div', { className: 'stack' }, heading(method.name, 'h3'),
+    p('新しい有効期限を保存すると、このカードに紐付く固定費がすべて未確認になります。'),
+    expiryFields()), values => {
+    const expiry = readExpiry(values)
+    if (expiry === method.expiry) throw new Error('現在とは異なる有効期限を入力してください。')
+    save(renewCard(data, method.id, expiry))
+  }, 'カードを更新する')
+}
+
+function confirmButton(expense, primary = false) {
+  const control = button('確認済みにする', () =>
+    confirmAction('支払い情報の確認', `「${expense.name}」のサービス側で現在のカード情報が登録されていることを確認しましたか？`, () => {
+      save({ ...data, expenses: data.expenses.map(item =>
+        item.id === expense.id ? { ...item, confirmed: true } : item) })
+    }, '確認済みにする'), primary ? 'primary' : undefined)
+  if (primary) control.prepend(el('span', { 'aria-hidden': 'true', text: '✓' }))
+  return control
+}
+
+function linkedExpenses(method) {
+  return data.expenses.filter(item => item.methodId === method.id)
+}
+
+function progress(method) {
+  const linked = linkedExpenses(method)
+  return `${linked.filter(item => item.confirmed).length}/${linked.length}件確認済み`
+}
+
+function confirmationProgress(method) {
+  const help = button('', showHelp, 'help-link')
+  help.setAttribute('aria-haspopup', 'dialog')
+  help.append(el('span', { className: 'help-icon', 'aria-hidden': 'true', text: '?' }),
+    el('span', { className: 'help-label', text: '確認済みとは' }))
+  return actions(p(progress(method)), help)
+}
+
+function methodList() {
+  page('支払い方法', button('＋ 支払い方法を追加', () => methodForm(), 'primary'))
+  const list = stack()
+  for (const [type, label] of [['card', 'クレジットカード'], ['bank', '銀行口座']]) {
+    list.append(heading(label))
+    const methods = data.methods.filter(method => method.type === type)
+    if (!methods.length) list.append(panel(p('登録されていません。')))
+    for (const method of methods) {
+      const linked = linkedExpenses(method)
+      const pending = linked.filter(item => !item.confirmed)
+      const confirmation = pending.length
+        ? el('section', { className: 'confirmation-panel', 'aria-label': '支払い情報が未確認です' },
+          el('h4', { className: 'confirmation-panel-title' },
+            el('span', { 'aria-hidden': 'true', text: '⚠' }), '支払い情報が未確認です'),
+          confirmationProgress(method),
+          ...pending.map(item => el('div', { className: 'method-confirmation-row' },
+            p(item.name), confirmButton(item, true))))
+        : method.updated ? confirmationProgress(method) : null
+      list.append(panel(heading(method.name, 'h3'), method.expiry ? p('有効期限　' + method.expiry) : null,
+        badge(method),
+        confirmation,
+        el('div', { className: 'actions management-actions' },
+          button('編集する', () => methodForm(method)),
+          method.type === 'card' ? button('カードを更新', () => renewalForm(method)) : null,
+          button('削除する', () => {
+            if (linked.length) {
+              openDialog('支払い方法を削除できません', p('先に固定費でこの支払い方法を変更または解除してください。'))
+              return
+            }
+            confirmAction('支払い方法を削除', `「${method.name}」を削除しますか？`, () => {
+              save({ ...data, methods: data.methods.filter(item => item.id !== method.id) })
+            }, '削除する')
+          }, 'delete delete-outline'))))
+    }
+  }
+  screen.append(list)
+}
+
+const expiringCards = () => data.methods.filter(method => {
+  const status = cardStatus(method)
+  return status && status.tone !== 'normal'
+})
+
+function noticeSection(cards, pending) {
+  const pendingCards = data.methods.filter(method => pending.some(item => item.methodId === method.id))
+  return el('section', { id: 'home-notifications', className: 'stack section',
+    'aria-labelledby': 'notifications-heading', tabindex: '-1' },
+    el('h2', { id: 'notifications-heading', text: '通知' }),
+    ...(cards.length || pending.length ? [
+      ...cards.map(method => panel(heading(method.name, 'h3'), badge(method),
+        p('有効期限　' + method.expiry), link('支払い方法を開く', '#methods'))),
+      ...pendingCards.map(method => panel(heading(method.name + 'の支払い情報を確認', 'h3'),
+        confirmationProgress(method),
+        ...pending.filter(item => item.methodId === method.id).map(item =>
+          actions(p(item.name), confirmButton(item)))))
+    ] : [panel(p('現在の通知はありません'))]))
+}
+
+function home() {
+  page('ホーム')
+  const missing = data.expenses.filter(item => item.amount === null).length
+  const cards = expiringCards()
+  const pending = data.expenses.filter(item => !item.confirmed)
+  const noticeCount = cards.length + pending.length
+  const metric = (label, count, href) => {
+    const children = [p(label), el('strong', { text: number.format(count) + '件' })]
+    return href ? el('a', { className: 'tile', href }, ...children) : panel(...children)
+  }
+  screen.append(stack(el('section', { className: 'panel hero' }, heading('月額換算の固定費合計'),
+      p(yen(monthlyTotal(data.expenses)), 'total')),
+    el('div', { className: 'metrics' },
+      metric('通知', noticeCount, '#home-notifications'),
+      metric('固定費', data.expenses.length, '#expenses'),
+      metric('支払い方法', data.methods.length, '#methods'),
+      missing ? metric('金額未入力', missing) : null),
+    !data.expenses.length && !data.methods.length
+      ? panel(heading('はじめて使う方へ'), p('支払い方法を登録してから、紐付けたい固定費を登録します。'),
+        link('支払い方法を開く', '#methods'), p(storageNote, 'muted')) : null), noticeSection(cards, pending))
+}
+
+function exportBackup() {
+  const date = new Date()
+  const iso = [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+    .map(value => String(value).padStart(2, '0')).join('-')
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
+  const download = el('a', { href: url, download: `teikiharaicho-backup-${iso}.json` })
+  download.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+const counts = state => `固定費 ${state.expenses.length}件、支払い方法 ${state.methods.length}件、カスタムカテゴリ ${state.customCategories.length}件`
+
+function backupControls() {
+  const input = el('input', { type: 'file', accept: '.json,application/json', hidden: '' })
+  const error = el('p', { className: 'error', role: 'alert', hidden: '' })
+  input.addEventListener('change', async () => {
+    const file = input.files[0]
+    input.value = ''
+    if (!file) return
+    error.hidden = true
+    try {
+      const restored = validate(JSON.parse(await file.text()))
+      if (!input.isConnected) return
+      openDialog('バックアップから復元', el('div', { className: 'stack' },
+        p(data ? '現在　' + counts(data) : '現在のデータ件数を読み取れません。'),
+        p('取り込み後　' + counts(restored)),
+        p('現在のデータをすべて取り込み後のデータに置き換えます。')),
+      () => save(restored), '置き換える')
+    } catch (failure) {
+      error.textContent = failure instanceof SyntaxError ? 'JSONファイルを読み取れませんでした。' : failure.message
+      error.hidden = false
+    }
+  })
+  return panel(heading('JSONバックアップ'),
+    actions(data ? button('エクスポート', exportBackup) : null, button('インポート', () => input.click())), input, error)
+}
+
+function settings() {
+  page('設定')
+  screen.append(stack(panel(heading('データの保存'), p(storageNote)), backupControls(),
+    panel(heading('全データ削除'), p('固定費、支払い方法、カスタムカテゴリ、確認状態をすべて削除します。'),
+      actions(button('全データを削除', () =>
+        confirmAction('全データを削除', 'すべてのアプリデータを削除します。この操作は取り消せません。', () => {
+          try {
+            data = storage.clear()
+          } catch {
+            throw new Error('データを削除できませんでした。ブラウザの保存設定を確認してください。')
+          }
+          loadError = false
+        }, '削除する'), 'delete')))))
+}
+
+function render() {
+  const [route, id] = location.hash.slice(1).split('/')
+  const current = route === 'expense' ? 'expenses' : route === 'home-notifications' || !route ? 'home' : route
+  for (const nav of document.querySelectorAll('.navigation a, .settings-link')) {
+    if (nav.hash === '#' + current) nav.setAttribute('aria-current', 'page')
+    else nav.removeAttribute('aria-current')
+  }
+  screen.replaceChildren()
+  if (loadError) {
+    screen.append(p('保存データを読み込めませんでした。ブラウザの保存設定を確認するか、設定からバックアップを復元してください。', 'error'))
+    if (route !== 'settings') {
+      screen.append(link('設定を開く', '#settings'))
+      return
+    }
+  }
+  switch (route) {
+    case 'expenses': expenseList(); break
+    case 'expense': expenseDetails(data.expenses.find(item => encodeURIComponent(item.id) === id)); break
+    case 'methods': methodList(); break
+    case 'settings': settings(); break
+    default: home()
+  }
+}
+
+function scrollToRoute() {
+  if (location.hash === '#home-notifications') {
+    const section = document.querySelector('#home-notifications')
+    if (section) {
+      section.focus({ preventScroll: true })
+      section.scrollIntoView({ block: 'start' })
+    }
+  } else {
+    window.scrollTo(0, 0)
+  }
+}
+
+window.addEventListener('hashchange', () => {
+  if (dialog.open) dialog.close()
+  render()
+  scrollToRoute()
+})
+window.addEventListener('storage', event => {
+  if (event.key !== null && event.key !== 'koteihi') return
+  if (dialog.open) dialog.close()
+  try {
+    data = storage.load()
+    loadError = false
+  } catch {
+    data = undefined
+    loadError = true
+  }
+  render()
+})
+render()
+if (location.hash === '#home-notifications') scrollToRoute()
+</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <a class="brand" href="#home">こていひ！</a>
+        <p class="subtitle">固定費と支払い方法をまとめて管理</p>
+      </div>
+      <a class="settings-link" href="#settings">設定</a>
+    </div>
+  </header>
+  <nav class="navigation" aria-label="メインメニュー">
+    <a href="#home"><span aria-hidden="true">⌂</span>ホーム</a>
+    <a href="#expenses"><span aria-hidden="true">≡</span>固定費</a>
+    <a href="#methods"><span aria-hidden="true">▤</span>支払い方法</a>
+  </nav>
+  <main id="screen" class="container"></main>
+  <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+  <template id="expense-form">
+    <label>サービス名<input name="name" required autofocus></label>
+    <label>カテゴリ<select name="category" required></select></label>
+    <label class="custom-category" hidden>新しいカテゴリ名<input name="customCategory"></label>
+    <label>1回の請求額（円）<input name="amount" type="number" min="0" max="9007199254740991" step="1" inputmode="numeric" placeholder="未入力でも登録できます"></label>
+    <label>支払い頻度<select name="interval" required></select></label>
+    <label>支払い方法<select name="methodId"></select></label>
+    <p class="method-hint muted" hidden>実際のサービス側で、この支払い方法が登録されていることを確認してください。</p>
+    <label>メモ<textarea name="memo" rows="3"></textarea></label>
+  </template>
+  <noscript>こていひ！を使うにはJavaScriptを有効にしてください。</noscript>
+</body>
+</html>
