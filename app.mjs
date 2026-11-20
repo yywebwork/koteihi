@@ -302,6 +302,14 @@ function progress(method) {
   return `${linked.filter(item => item.confirmed).length}/${linked.length}件確認済み`
 }
 
+function confirmationProgress(method) {
+  const help = button('', showHelp, 'help-link')
+  help.setAttribute('aria-haspopup', 'dialog')
+  help.append(el('span', { className: 'help-icon', 'aria-hidden': 'true', text: '?' }),
+    el('span', { className: 'help-label', text: '確認済みとは' }))
+  return actions(p(progress(method)), help)
+}
+
 function methodList() {
   page('支払い方法', button('＋ 支払い方法を追加', () => methodForm(), 'primary'))
   const list = stack()
@@ -314,7 +322,7 @@ function methodList() {
       const pending = linked.filter(item => !item.confirmed)
       list.append(panel(heading(method.name, 'h3'), method.expiry ? p('有効期限　' + method.expiry) : null,
         badge(method),
-        method.updated ? actions(p(progress(method)), button('？ 確認済みとは', showHelp)) : null,
+        method.updated ? confirmationProgress(method) : null,
         ...pending.map(item => actions(p(item.name), confirmButton(item))),
         actions(button('編集する', () => methodForm(method)),
           method.type === 'card' ? button('カードを更新', () => renewalForm(method)) : null,
@@ -345,16 +353,10 @@ function noticeSection(cards, pending) {
     ...(cards.length || pending.length ? [
       ...cards.map(method => panel(heading(method.name, 'h3'), badge(method),
         p('有効期限　' + method.expiry), link('支払い方法を開く', '#methods'))),
-      ...pendingCards.map(method => {
-        const help = button('', showHelp, 'help-link')
-        help.setAttribute('aria-haspopup', 'dialog')
-        help.append(el('span', { className: 'help-icon', 'aria-hidden': 'true', text: '?' }),
-          el('span', { className: 'help-label', text: '確認済みとは' }))
-        return panel(heading(method.name + 'の支払い情報を確認', 'h3'),
-          actions(p(progress(method)), help),
-          ...pending.filter(item => item.methodId === method.id).map(item =>
-            actions(p(item.name), confirmButton(item))))
-      })
+      ...pendingCards.map(method => panel(heading(method.name + 'の支払い情報を確認', 'h3'),
+        confirmationProgress(method),
+        ...pending.filter(item => item.methodId === method.id).map(item =>
+          actions(p(item.name), confirmButton(item)))))
     ] : [panel(p('現在の通知はありません'))]))
 }
 
