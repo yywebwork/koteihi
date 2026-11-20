@@ -35,7 +35,10 @@ button, .button, .settings-link {
 .site-header { border-bottom: 1px solid var(--line); }
 .header-inner, .container { width: min(100% - 2rem, 60rem); margin-inline: auto; }
 .header-inner, .row { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
-.header-inner { min-height: 64px; }
+.header-inner { min-height: 64px; padding-block: .65rem; }
+.brand-block { display: grid; min-width: 0; line-height: 1.35; }
+.subtitle { color: var(--muted); font-size: .85rem; }
+.settings-link { flex-shrink: 0; }
 .brand { font-size: 1.45rem; font-weight: 850; text-decoration: none; }
 .navigation {
   position: fixed;
@@ -82,6 +85,7 @@ h3 { font-size: 1rem; }
 .actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
 .controls { display: grid; gap: .65rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .controls label:last-child { grid-column: 1 / -1; }
+.expiry-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .label, .badge { font-size: .85rem; }
 .badge { width: fit-content; border-radius: .4rem; padding: .12rem .45rem; font-weight: 650; }
 .normal { background: #e5f2eb; color: #245640; }

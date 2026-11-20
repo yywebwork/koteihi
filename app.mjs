@@ -227,16 +227,26 @@ function expenseList() {
   updateList()
 }
 
-function expiryInput(value = '') {
-  const input = el('input', { name: 'expiry', type: 'month', pattern: '[0-9]{4}-(0[1-9]|1[0-2])',
-    placeholder: 'YYYY-MM', required: '' })
-  input.value = value
-  return input
+function expiryFields(value = '') {
+  const [year = '', month = ''] = value.split('-')
+  const yearInput = el('input', { name: 'expiryYear', inputmode: 'numeric', maxlength: '4',
+    pattern: '[0-9]{4}', placeholder: '例 2028', required: '' })
+  yearInput.value = year
+  yearInput.addEventListener('input', () => {
+    const digits = yearInput.value.replace(/[^0-9]/g, '').slice(0, 4)
+    if (digits !== yearInput.value) yearInput.value = digits
+  })
+  const monthInput = el('select', { name: 'expiryMonth', required: '' })
+  options(monthInput, [['', '選択してください'], ...Array.from({ length: 12 }, (_, index) => [
+    String(index + 1).padStart(2, '0'), String(index + 1)
+  ])], month)
+  return el('div', { className: 'expiry-fields' },
+    field('有効期限の年（西暦4桁）', yearInput), field('有効期限の月', monthInput))
 }
 
 function readExpiry(values) {
-  const expiry = values.get('expiry')
-  if (!expiryValid(expiry)) throw new Error('有効期限を西暦4桁と月の形式（YYYY-MM）で入力してください。')
+  const expiry = `${values.get('expiryYear')}-${values.get('expiryMonth')}`
+  if (!expiryValid(expiry)) throw new Error('有効期限は西暦4桁と1〜12の月を入力してください。')
   return expiry
 }
 
@@ -245,17 +255,16 @@ function methodForm(method) {
   options(type, [['card', 'クレジットカード'], ['bank', '銀行口座']], method?.type ?? 'card')
   const name = el('input', { name: 'name', required: '', autofocus: '' })
   name.value = method?.name ?? ''
-  const expiry = expiryInput(method?.expiry)
-  const expiryField = field('有効期限（YYYY-MM）', expiry)
+  const expiry = expiryFields(method?.expiry)
   function updateFields() {
-    expiryField.hidden = type.value !== 'card'
-    expiry.disabled = expiryField.hidden
+    expiry.hidden = type.value !== 'card'
+    for (const input of expiry.querySelectorAll('input, select')) input.disabled = expiry.hidden
   }
   type.addEventListener('change', updateFields)
   updateFields()
   openDialog(method ? '支払い方法を編集' : '支払い方法を追加',
     el('div', { className: 'stack' }, method ? null : field('種類', type), field('表示名称', name),
-      expiryField, p('カード番号、セキュリティコード、口座番号などは入力しないでください。', 'muted')),
+      expiry, p('カード番号、セキュリティコード、口座番号などは入力しないでください。', 'muted')),
     values => {
       const item = { id: method?.id ?? newId(), type: type.value, name: getName(values) }
       if (item.type === 'card') {
@@ -269,7 +278,7 @@ function methodForm(method) {
 function renewalForm(method) {
   openDialog('カードを更新', el('div', { className: 'stack' }, heading(method.name, 'h3'),
     p('新しい有効期限を保存すると、このカードに紐付く固定費がすべて未確認になります。'),
-    field('新しい有効期限（YYYY-MM）', expiryInput())), values => {
+    expiryFields()), values => {
     const expiry = readExpiry(values)
     if (expiry === method.expiry) throw new Error('現在とは異なる有効期限を入力してください。')
     save(renewCard(data, method.id, expiry))
@@ -306,7 +315,7 @@ function methodList() {
       list.append(panel(heading(method.name, 'h3'), method.expiry ? p('有効期限　' + method.expiry) : null,
         badge(method),
         method.updated ? actions(p(progress(method)), button('？ 確認済みとは', showHelp)) : null,
-        ...pending.map(item => actions(link(item.name, expenseUrl(item)), confirmButton(item))),
+        ...pending.map(item => actions(p(item.name), confirmButton(item))),
         actions(button('編集する', () => methodForm(method)),
           method.type === 'card' ? button('カードを更新', () => renewalForm(method)) : null,
           button('削除する', () => {
@@ -328,40 +337,41 @@ const expiringCards = () => data.methods.filter(method => {
   return status && status.tone !== 'normal'
 })
 
-function notices() {
-  page('通知')
-  const cards = expiringCards()
-  const pendingCards = data.methods.filter(method => method.updated &&
-    linkedExpenses(method).some(item => !item.confirmed))
-  screen.append(stack(...(cards.length || pendingCards.length ? [
-    ...cards.map(method => panel(heading(method.name), badge(method),
-      p('有効期限　' + method.expiry), link('支払い方法を開く', '#methods'))),
-    ...pendingCards.map(method => panel(heading(method.name + 'の支払い情報を確認'), p(progress(method)),
-      button('？ 確認済みとは', showHelp),
-      ...linkedExpenses(method).filter(item => !item.confirmed).map(item =>
-        actions(link(item.name, expenseUrl(item)), confirmButton(item)))))
-  ] : [panel(p('現在の通知はありません。'))])))
+function noticeSection(cards, pending) {
+  const pendingCards = data.methods.filter(method => pending.some(item => item.methodId === method.id))
+  return el('section', { id: 'home-notifications', className: 'stack section',
+    'aria-labelledby': 'notifications-heading', tabindex: '-1' },
+    el('h2', { id: 'notifications-heading', text: '通知' }),
+    ...(cards.length || pending.length ? [
+      ...cards.map(method => panel(heading(method.name, 'h3'), badge(method),
+        p('有効期限　' + method.expiry), link('支払い方法を開く', '#methods'))),
+      ...pendingCards.map(method => panel(heading(method.name + 'の支払い情報を確認', 'h3'), p(progress(method)),
+        button('？ 確認済みとは', showHelp),
+        ...pending.filter(item => item.methodId === method.id).map(item =>
+          actions(p(item.name), confirmButton(item)))))
+    ] : [panel(p('現在の通知はありません'))]))
 }
 
 function home() {
   page('ホーム')
   const missing = data.expenses.filter(item => item.amount === null).length
-  const noticeCount = expiringCards().length + data.expenses.filter(item => !item.confirmed).length
+  const cards = expiringCards()
+  const pending = data.expenses.filter(item => !item.confirmed)
+  const noticeCount = cards.length + pending.length
   const metric = (label, count, href) => {
     const children = [p(label), el('strong', { text: number.format(count) + '件' })]
     return href ? el('a', { className: 'tile', href }, ...children) : panel(...children)
   }
-  screen.append(stack(p('固定費と支払い方法をまとめて管理', 'muted'),
-    el('section', { className: 'panel hero' }, heading('月額換算の固定費合計'),
+  screen.append(stack(el('section', { className: 'panel hero' }, heading('月額換算の固定費合計'),
       p(yen(monthlyTotal(data.expenses)), 'total')),
     el('div', { className: 'metrics' },
-      metric('通知', noticeCount, '#notices'),
+      metric('通知', noticeCount, '#home-notifications'),
       metric('固定費', data.expenses.length, '#expenses'),
       metric('支払い方法', data.methods.length, '#methods'),
       missing ? metric('金額未入力', missing) : null),
     !data.expenses.length && !data.methods.length
       ? panel(heading('はじめて使う方へ'), p('支払い方法を登録してから、紐付けたい固定費を登録します。'),
-        link('支払い方法を開く', '#methods'), p(storageNote, 'muted')) : null))
+        link('支払い方法を開く', '#methods'), p(storageNote, 'muted')) : null), noticeSection(cards, pending))
 }
 
 function exportBackup() {
@@ -418,7 +428,7 @@ function settings() {
 
 function render() {
   const [route, id] = location.hash.slice(1).split('/')
-  const current = route === 'expense' ? 'expenses' : route || 'home'
+  const current = route === 'expense' ? 'expenses' : route === 'home-notifications' || !route ? 'home' : route
   for (const nav of document.querySelectorAll('.navigation a, .settings-link')) {
     if (nav.hash === '#' + current) nav.setAttribute('aria-current', 'page')
     else nav.removeAttribute('aria-current')
@@ -435,16 +445,27 @@ function render() {
     case 'expenses': expenseList(); break
     case 'expense': expenseDetails(data.expenses.find(item => encodeURIComponent(item.id) === id)); break
     case 'methods': methodList(); break
-    case 'notices': notices(); break
     case 'settings': settings(); break
     default: home()
+  }
+}
+
+function scrollToRoute() {
+  if (location.hash === '#home-notifications') {
+    const section = document.querySelector('#home-notifications')
+    if (section) {
+      section.focus({ preventScroll: true })
+      section.scrollIntoView({ block: 'start' })
+    }
+  } else {
+    window.scrollTo(0, 0)
   }
 }
 
 window.addEventListener('hashchange', () => {
   if (dialog.open) dialog.close()
   render()
-  window.scrollTo(0, 0)
+  scrollToRoute()
 })
 window.addEventListener('storage', event => {
   if (event.key !== null && event.key !== 'koteihi') return
@@ -459,3 +480,4 @@ window.addEventListener('storage', event => {
   render()
 })
 render()
+if (location.hash === '#home-notifications') scrollToRoute()
